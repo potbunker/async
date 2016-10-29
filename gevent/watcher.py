@@ -15,14 +15,17 @@ def file_source(file):
 def watch(handle):
     return select.select([handle], [], [], 5)
 
+
 def print_f(value):
     print value
+
 
 def handle_select(value):
     if ([], [], []) == value:
         logger.info('Nothing happening...')
     else:
         return value[0][0].readline()
+
 
 Observable.just(sys.stdin) \
     .map(watch) \
