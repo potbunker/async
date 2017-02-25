@@ -1,8 +1,7 @@
-import pytest
-from gevent.weather import get_weather
-import logging
 import json
+import logging
 
+from reactive.weather import get_weather
 
 logger = logging.getLogger(__name__)
 
