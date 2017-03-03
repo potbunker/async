@@ -1,8 +1,8 @@
 from threading import Lock, RLock, Thread, Condition
 from rx import Observable as O
 from rx.core import Scheduler
-import select
-import time
+from Queue import Queue
+import signal
 import logging
 import sys
 logging.basicConfig(level=logging.DEBUG,
@@ -11,11 +11,9 @@ logging.basicConfig(level=logging.DEBUG,
 
 logger = logging.getLogger(__name__)
 
-o = RLock()
-condition = Condition(o)
 
 def complete():
-#    condition.release()
+    signal.setitimer(signal.ITIMER_REAL, 0.001, 1)
     logger.info('Fin')
 
 observer = {
@@ -23,11 +21,20 @@ observer = {
     'on_completed': complete
 }
 
+
+def handler(signum, frame):
+    import traceback
+    logger.info('signal {} received. {}'.format(signum, frame))
+    traceback.print_stack(frame)
+
 if __name__ == '__main__':
-    sub = O.interval(1000)\
-        .observe_on(Scheduler.event_loop)\
-        .take(5)\
+    signal.signal(signal.SIGALRM, handler)
+    signal.signal(signal.SIGTERM, handler)
+
+    sub = O.timer(0, 1000, Scheduler.timeout)\
+        .take(20)\
         .subscribe(**observer)
 
-    O.never().subscribe(**observer)
+    signal.pause()
+
     logger.info('exiting')
